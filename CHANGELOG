@@ -1,0 +1,96 @@
+1.1.1
+-----
+* fix how the CSP is set
+
+1.1.0
+-----
+* update to Shopify App Bridge 3
+
+1.0.1
+-----
+* drop sinatra version requirement from gemspec
+
+1.0.0
+-----
+* Update to omniauth 2.0.4 and add rack protection authenticity token
+  * All forms will need an authenticity_token param added like in the login view
+  * Refactored the provided routes to be simpler. Now only login and logout (no more install)
+  * shopify_webhook now defines the route because it needs to also configure ignoring csrf for the route
+  * refactored other internal methods to simplify and reduce surface area
+* Removed heroku rake tasks. They are out of date and don't encourage best practises
+
+0.12.0
+------
+* Update to use the Shopify AppBridge instead of the ESDK
+  * This change is mostly to generated files so you'll need to apply those updates
+    to your own versions.
+* shop_origin no longer includes protocol
+* return_to re-worked to function with the AppBridge
+
+0.11.0
+------
+* remove rack-flash3 use sinatra-flash instead
+* remove a duplicate config of sessions that was breaking the same_site fix
+* remove a runtime dependency that didn't end up being used for the same_site fix but was added anyways
+* update ruby and rake versions
+
+0.10.0
+------
+* Add the api_version to settings and update to 2019-07
+
+0.9.0
+-----
+* set secure and and same_site options on the session cookie. Fixes auth with the upcoming chrome 80 release
+
+0.8.0
+-----
+* Shopify updated the way sessions are created: https://github.com/Shopify/shopify_api/blob/master/README.md#-breaking-change-notice-for-version-700-, updating code to reflect these changes.
+
+0.7.0
+-----
+* make base_url private (users can add back in their app easily if needed)
+* store request params in the session so they can be retrieved after the omniauth flow. This fixes app actions from the admin if the user's session has expired
+* refactored some smaller methods to make the shopify_session method easier on the eyes.
+
+0.6.0
+-----
+* remove current_shop* methods in favor of yielding shop_name to the block methods
+
+0.5.0
+-----
+* replace webhook_session and webhook_job with shopify_webhook
+* remove redis and resque as dependencies
+
+0.4.0
+-----
+* update to sinatra 2.0.1
+* update to attr_encrypted 3.1.0
+* remove SHOPIFY_REDIRECT_URI param
+
+0.3.4
+-----
+* rename lib to src in the example/template
+
+0.3.3
+-----
+* fix a bug in the generator
+
+0.3.2
+-----
+* remove an extra `%` from the redirect view
+
+0.3.1
+-----
+* update authentication code for upcoming chrome changes.
+
+0.3.0
+-----
+* Remove sinatra-twitter-bootstrap dependency. Include css from cdn directly for example app.
+
+0.2.0
+-----
+* added a SHOPIFY_REDIRECT_URI env param for setting the redirect_uri (was breifly HOSTNAME)
+* add versions to gemfile
+* refactored the generator
+* Changed install method to after_shopify_auth. Implementations of this method must now be idempotent as this will be called anytime the app is auth'd which may be due to just a lost session and not necessarily an install.
+* Always redo the full auth rather than trying to keep track of first time install state vs re-auth
