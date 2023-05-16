@@ -12,9 +12,9 @@
 
 ActiveRecord::Schema[7.0].define(version: 2014_04_14_042317) do
   create_table "shops", force: :cascade do |t|
-    t.string "name"
-    t.string "token_encrypted"
-    t.index ["name"], name: "index_shops_on_name"
+    t.string "shopify_domain"
+    t.string "shopify_token"
+    t.index ["shopify_domain"], name: "index_shops_on_shopify_domain"
   end
 
 end

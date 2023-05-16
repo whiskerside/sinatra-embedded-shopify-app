@@ -1,9 +1,9 @@
-shopify-sinatra-app [![CircleCI](https://dl.circleci.com/status-badge/img/gh/kevinhughes27/shopify-sinatra-app/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/kevinhughes27/shopify-sinatra-app/tree/master)
+sinatra-embedded-shopify-app [![CircleCI](https://dl.circleci.com/status-badge/img/gh/kevinhughes27/sinatra-embedded-shopify-app/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/kevinhughes27/sinatra-embedded-shopify-app/tree/master)
 ===================
 
 "A classy shopify app"
 
-shopify-sinatra-app is lightweight extension for building Shopify apps using Sinatra. It comes with the Shopify API gem for interacting with the Shopify API and uses the Shopify omniauth gem to handle authentication via Oauth (other auth methods are not supported). The framework itself provides a handful of helper methods to make creating your app as easy as possible. The framework was designed with deployment to Heroku in mind and following the instructions below I've been able to create a new application from scratch, deploy it to Heroku and install on my live test shop in less than 5 minutes.
+sinatra-embedded-shopify-app is lightweight extension for building Shopify apps using Sinatra. It comes with the Shopify API gem for interacting with the Shopify API and uses the Shopify omniauth gem to handle authentication via Oauth (other auth methods are not supported). The framework itself provides a handful of helper methods to make creating your app as easy as possible. The framework was designed with deployment to Heroku in mind and following the instructions below I've been able to create a new application from scratch, deploy it to Heroku and install on my live test shop in less than 5 minutes.
 
 
 Getting Started
@@ -12,23 +12,23 @@ Getting Started
 Install the gem:
 
 ```
-gem install shopify-sinatra-app
+gem install sinatra-embedded-shopify-app
 ```
 
 or build from source
 
 ```
-gem build shopify-sinatra-app.gemspec
-gem install shopify-sinatra-app-X.X.X.gem
+gem build sinatra-embedded-shopify-app.gemspec
+gem install sinatra-embedded-shopify-app-X.X.X.gem
 ```
 
 To create a new app use the generator:
 
 ```
-shopify-sinatra-app-generator new <your new app name>
+sinatra-embedded-shopify-app-generator new <your new app name>
 ```
 
-This will create a new skeleton shopify-sinatra-app. The generator will create several default files for you rather than having them bundled in the sinatra extension - its worthwhile to read this section to understand what each of these files is for.
+This will create a new skeleton sinatra-embedded-shopify-app. The generator will create several default files for you rather than having them bundled in the sinatra extension - its worthwhile to read this section to understand what each of these files is for.
 
 `config/database.yml` --> The database config for active record. Initially this is setup to use sqlite3 for development and testing which you may want to change to mimic your production database.
 
@@ -63,7 +63,7 @@ You'll need to create a Shopify Partner Account and a new application. You can m
   * the default redirect_uri from omniauth `<your domain>/auth/shopify/callback`
   * and `<your domain>/login`
 
-Note - The shopify-sinatra-app creates an embedded app! You need change the embedded setting to `enabled` in the [Shopify Partner area](https://app.shopify.com/services/partners/api_clients) for your app. If you don't want your app to be embedded then remove the related code in `layout/application.erb` and delete the `layout/_top_bar.erb` file and the references to it in the other views.
+Note - The sinatra-embedded-shopify-app creates an embedded app! You need change the embedded setting to `enabled` in the [Shopify Partner area](https://app.shopify.com/services/partners/api_clients) for your app. If you don't want your app to be embedded then remove the related code in `layout/application.erb` and delete the `layout/_top_bar.erb` file and the references to it in the other views.
 
 After creating your new application you need to edit the `.env` file and add the following lines:
 
@@ -101,8 +101,8 @@ end
 Note this method does not active a Shopify session by default but the current_shop* methods still work. It is not advised but if you want to handle the webhook in a web request you will need to activate the ShopifyAPI session manually:
 
 ```ruby
-shop = Shop.find_by(name: current_shop_name)
-api_session = ShopifyAPI::Session.new(shop.name, shop.token)
+shop = Shop.find_by(shopify_domain: current_shop_name)
+api_session = ShopifyAPI::Session.new(shop.shopify_domain, shop.shopify_token)
 ShopifyAPI::Base.activate_session(api_session)
 ```
 
@@ -110,9 +110,9 @@ It's impossible to control the flow of webhooks to your app from Shopify especia
 
 **after_shopify_auth** - This is a private method provided with the framework that gets called whenever the app is authorized. You should fill this method in with anything you need to initialize, for example webhooks and services on Shopify or any other database models you have created specific to a shop. Note that this method will be called anytime the auth flow is completed so this method should be idempotent (running it twice has the same effect as running it once).
 
-shopify-sinatra-app includes sinatra/activerecord for creating models that can be persisted in the database. You might want to read more about sinatra/activerecord and the methods it makes available to you: [https://github.com/janko-m/sinatra-activerecord](https://github.com/janko-m/sinatra-activerecord)
+sinatra-embedded-shopify-app includes sinatra/activerecord for creating models that can be persisted in the database. You might want to read more about sinatra/activerecord and the methods it makes available to you: [https://github.com/janko-m/sinatra-activerecord](https://github.com/janko-m/sinatra-activerecord)
 
-shopify-sinatra-app also includes `sinatra-flash` and the flash messages are forwarded to the Shopify Embedded App SDK (see the code in `views/layouts/application.erb`). Flash messages are useful for signalling to your users that a request was successful without changing the page. The following is an example of how to use a flash message in a route:
+sinatra-embedded-shopify-app also includes `sinatra-flash` and the flash messages are forwarded to the Shopify Embedded App SDK (see the code in `views/layouts/application.erb`). Flash messages are useful for signalling to your users that a request was successful without changing the page. The following is an example of how to use a flash message in a route:
 
 ```ruby
 post '/flash_message' do

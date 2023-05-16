@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 ruby '2.7.7'
 
-gem 'shopify-sinatra-app', path: '../'
 gem 'sinatra-activerecord'
+gem 'sinatra-embedded-shopify-app', path: '../'
 gem 'sinatra-flash'
 
 group :production do
@@ -10,8 +12,8 @@ group :production do
 end
 
 group :development, :test do
-  gem 'sqlite3'
   gem 'byebug'
+  gem 'sqlite3'
 end
 
 group :development do
@@ -19,8 +21,8 @@ group :development do
 end
 
 group :test do
-  gem 'mocha', require: false
-  gem 'minitest'
-  gem 'rack-test'
   gem 'fakeweb'
+  gem 'minitest'
+  gem 'mocha', require: false
+  gem 'rack-test'
 end
