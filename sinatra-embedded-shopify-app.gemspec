@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'fakeweb'
   s.add_development_dependency 'minitest'
   s.add_development_dependency 'mocha'
-  s.add_development_dependency 'rack-test', '~> 2.0.2'
+  s.add_development_dependency 'rack-test', '~> 2.1.0'
   s.add_development_dependency 'rake', '~> 12.3', '>= 12.3.3'
   s.add_development_dependency 'sqlite3', '~> 1.6.2'
 end
