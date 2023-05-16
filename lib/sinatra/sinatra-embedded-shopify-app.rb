@@ -1,26 +1,26 @@
+# frozen_string_literal: true
+
 require 'sinatra/base'
 require 'sinatra/activerecord'
-
-require 'attr_encrypted'
 require 'active_support/all'
-
 require 'shopify_api'
 require 'omniauth-shopify-oauth2'
 
+# Sinatra
 module Sinatra
+  # Shopify
   module Shopify
+    # Methods
     module Methods
-
       # designed to be overridden
-      def after_shopify_auth
-      end
+      def after_shopify_auth; end
 
       # for the app bridge initializer
       def shop_host
-        "#{session[:shopify][:host]}"
+        (session[:shopify][:host]).to_s
       end
 
-      def shopify_session(&blk)
+      def shopify_session
         return_to = request.path
         return_params = request.params
 
@@ -37,12 +37,11 @@ module Sinatra
           activate_shopify_api(shop_name, token)
           yield shop_name
         end
-
       rescue ActiveResource::UnauthorizedAccess
         clear_session
 
-        shop = Shop.find_by(name: shop_name)
-        shop.token = nil
+        shop = Shop.find_by(shopify_domain: shop_name)
+        shop.shopify_token = nil
         shop.save
 
         redirect request.path
@@ -50,10 +49,10 @@ module Sinatra
 
       private
 
-      def authenticate(return_to = '/', return_params = nil)
+      def authenticate(_return_to = '/', return_params = nil)
         session[:return_params] = return_params if return_params
 
-        if shop_name = sanitized_shop_param(params)
+        if (shop_name = sanitized_shop_param(params))
           redirect "/login?shop=#{shop_name}"
         else
           redirect '/login'
@@ -83,8 +82,9 @@ module Sinatra
         ShopifyAPI::Base.activate_session(api_session)
       end
 
-      def receive_webhook(&blk)
+      def receive_webhook
         return unless verify_shopify_webhook
+
         shop_name = request.env['HTTP_X_SHOPIFY_SHOP_DOMAIN']
         webhook_body = ActiveSupport::JSON.decode(request.body.read.to_s)
         yield shop_name, webhook_body
@@ -93,6 +93,7 @@ module Sinatra
 
       def sanitized_shop_param(params)
         return unless params[:shop].present?
+
         name = params[:shop].to_s.strip
         name += '.myshopify.com' if !name.include?('myshopify.com') && !name.include?('.')
         name.gsub!('https://', '')
@@ -120,7 +121,7 @@ module Sinatra
     # needs to be dynamic to incude the current shop
     class ContentSecurityPolicy < Rack::Protection::Base
       def csp_policy(env)
-        "frame-ancestors: #{current_shop(env)} https://admin.shopify.com;"
+        "frame-ancestors #{current_shop(env)} https://admin.shopify.com;"
       end
 
       def call(env)
@@ -134,8 +135,8 @@ module Sinatra
 
       def current_shop(env)
         s = session(env)
-        if s.has_key?("return_params")
-          "https://#{s["return_params"]["shop"]}"
+        if s.has_key?('return_params')
+          "https://#{s['return_params']['shop']}"
         elsif s.has_key?(:shopify)
           "https://#{s[:shopify][:shop]}"
         end
@@ -191,26 +192,26 @@ module Sinatra
       app.use Shopify::ContentSecurityPolicy
 
       app.use Rack::Protection::AuthenticityToken, allow_if: lambda { |env|
-        app.settings.webhook_routes.include?(env["PATH_INFO"])
+        app.settings.webhook_routes.include?(env['PATH_INFO'])
       }
 
       OmniAuth.config.allowed_request_methods = [:post]
 
       app.use OmniAuth::Builder do
         provider :shopify,
-          app.settings.api_key,
-          app.settings.shared_secret,
-          scope: app.settings.scope,
-          setup: lambda { |env|
-            shop = if env['REQUEST_METHOD'] == 'POST'
-              env['rack.request.form_hash']['shop']
-            else
-              Rack::Utils.parse_query(env['QUERY_STRING'])['shop']
-            end
+                 app.settings.api_key,
+                 app.settings.shared_secret,
+                 scope: app.settings.scope,
+                 setup: lambda { |env|
+                   shop = if env['REQUEST_METHOD'] == 'POST'
+                            env['rack.request.form_hash']['shop']
+                          else
+                            Rack::Utils.parse_query(env['QUERY_STRING'])['shop']
+                          end
 
-            site_url = "https://#{shop}"
-            env['omniauth.strategy'].options[:client_options][:site] = site_url
-          }
+                   site_url = "https://#{shop}"
+                   env['omniauth.strategy'].options[:client_options][:site] = site_url
+                 }
       end
 
       ShopifyAPI::Session.setup(
@@ -232,8 +233,8 @@ module Sinatra
         token = request.env['omniauth.auth']['credentials']['token']
         host = params['host']
 
-        shop = Shop.find_or_initialize_by(name: shop_name)
-        shop.token = token
+        shop = Shop.find_or_initialize_by(shopify_domain: shop_name)
+        shop.shopify_token = token
         shop.save!
 
         session[:shopify] = {
@@ -242,7 +243,7 @@ module Sinatra
           token: token
         }
 
-        after_shopify_auth()
+        after_shopify_auth
 
         return_params = session[:return_params]
         session.delete(:return_params)
@@ -263,18 +264,12 @@ module Sinatra
   register Shopify
 end
 
+# Shop
 class Shop < ActiveRecord::Base
   def self.secret
     @secret ||= ENV['SECRET']
   end
 
-  attr_encrypted :token,
-    key: secret,
-    attribute: 'token_encrypted',
-    mode: :single_iv_and_salt,
-    algorithm: 'aes-256-cbc',
-    insecure_mode: true
-
-  validates_presence_of :name
-  validates_presence_of :token, on: :create
+  validates_presence_of :shopify_domain
+  validates_presence_of :shopify_token, on: :create
 end

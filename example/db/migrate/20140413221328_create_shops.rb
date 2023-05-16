@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 class CreateShops < ActiveRecord::Migration[5.1]
   def self.up
     create_table :shops do |t|
-      t.string :name
-      t.string :token_encrypted
+      t.string :shopify_domain
+      t.string :shopify_token
     end
   end
 

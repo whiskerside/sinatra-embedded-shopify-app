@@ -1,6 +1,9 @@
-require 'sinatra/shopify-sinatra-app'
+# frozen_string_literal: true
+
+require 'sinatra/sinatra-embedded-shopify-app'
 require 'sinatra/flash'
 
+# SinatraApp
 class SinatraApp < Sinatra::Base
   register Sinatra::Shopify
   register Sinatra::Flash
@@ -24,7 +27,7 @@ class SinatraApp < Sinatra::Base
   # and cleans up data, add to this endpoint as your app
   # stores more data.
   shopify_webhook '/uninstall' do |shop_name, params|
-    Shop.find_by(name: shop_name).destroy
+    Shop.find_by(shopify_domain: shop_name).destroy
   end
 
   private
