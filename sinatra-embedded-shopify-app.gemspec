@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'omniauth', '~> 2.0', '>= 2.0.4'
   s.add_runtime_dependency 'omniauth-shopify-oauth2', '~> 2.3', '>= 2.3.2'
-  s.add_runtime_dependency 'shopify_api', '9.5.1'
+  s.add_runtime_dependency 'shopify_api', '13.0.0'
 
   s.add_development_dependency 'fakeweb'
   s.add_development_dependency 'minitest'
